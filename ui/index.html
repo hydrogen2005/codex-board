@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 用量看板</title><link rel="stylesheet" href="/ui.css">
+</head>
+<body>
+<aside class="sidebar">
+  <a href="#overview" class="brand"><span class="brand-icon">C<span>·</span></span><span>Codex <small>用量看板</small></span></a>
+  <div class="side-label">工作空间</div>
+  <nav aria-label="主导航">
+    <a href="#overview" class="nav-link active"><span>◫</span>用量概览</a>
+    <a href="#sources-section" class="nav-link"><span>▣</span>设备与数据<span id="side-device-count" class="nav-count">0</span></a>
+    <a href="#notes-section" class="nav-link"><span>ⓘ</span>统计说明</a>
+  </nav>
+  <div class="side-note"><span class="status-dot"></span>数据留在本机<p>离线统计 · 无需额外依赖</p></div>
+  <div class="side-machine"><span class="computer-icon">▰</span><div><strong id="sidebar-machine">本机</strong><small>当前电脑</small></div><span class="status-dot"></span></div>
+</aside>
+<main id="overview">
+  <header class="topbar"><div class="breadcrumb">工作空间 <span>/</span> 用量概览</div><span class="local-pill"><span class="status-dot"></span>本地运行</span></header>
+  <section class="heading"><div><div class="eyebrow">CODEX · 本地用量统计</div><h1>Codex 用量概览<span>。</span></h1><p>查看各台电脑的 token 用量、每日趋势和消耗占比。</p></div><div class="heading-actions"><button id="refresh-button" class="button secondary"><span>↻</span> 读取本机</button><button id="import-button" class="button primary"><span>＋</span> 导入其他电脑</button></div></section>
+  <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+  <section class="filterbar" aria-label="统计筛选">
+    <div class="range-buttons" role="group" aria-label="快捷日期"><button data-range="today">今天</button><button data-range="7">近 7 天</button><button data-range="30" class="selected">近 30 天</button><button data-range="all">全部</button></div>
+    <div class="filter-controls"><div class="date-range"><input type="date" id="start-date" aria-label="开始日期"><span>至</span><input type="date" id="end-date" aria-label="结束日期"></div><select id="machine-filter" aria-label="筛选电脑"><option value="">全部电脑</option></select><button id="download-summary" class="text-button">↓ 下载占比</button></div>
+  </section>
+  <section class="metrics" aria-label="用量汇总">
+    <div class="metric main-metric"><span class="metric-label">总 token 用量</span><div id="total-tokens" class="metric-value">—</div><small id="period-label">正在读取本机数据</small></div>
+    <div class="metric"><span class="metric-label">输入 token</span><div id="input-tokens" class="metric-value">—</div><small>含缓存输入</small></div>
+    <div class="metric"><span class="metric-label">输出 token</span><div id="output-tokens" class="metric-value">—</div><small>含推理输出</small></div>
+    <div class="metric"><span class="metric-label">参与统计的电脑</span><div id="device-count" class="metric-value">—</div><small id="event-count">去重后的用量事件</small></div>
+  </section>
+  <section class="chart-workspace">
+    <div class="trend-panel"><div class="panel-heading"><div><h2>每日用量趋势</h2><p id="trend-description">按北京时间统计 · 输入与输出合计</p></div><span class="chart-key"><i></i>总 token</span></div><div id="trend-chart" class="trend-chart" aria-label="每日 token 用量趋势"></div></div>
+    <div class="share-panel"><div class="panel-heading"><div><h2>电脑用量占比</h2><p>占当前筛选总量的比例</p></div></div><div id="share-chart" class="share-chart"></div><div id="share-legend" class="share-legend"></div></div>
+  </section>
+  <section class="section-block" id="sources-section"><div class="section-title"><div><h2>设备与数据</h2><p>每台电脑导出一次，导入这里即可统一查看。</p></div><button id="export-local" class="button secondary small" disabled>↓ 导出本机数据</button></div>
+    <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="点击或拖入统计文件"><span class="upload-icon">↥</span><div><strong>拖入其他电脑的统计文件</strong><p>支持多选 .usage.jsonl 文件，也可以<span>点击选择</span></p></div><span class="file-tag">仅在本机处理</span></div>
+    <input id="file-input" type="file" accept=".jsonl" multiple hidden>
+    <div id="sources-list" class="sources-list"></div>
+    <details class="settings"><summary>本机设置<span>修改电脑名称或 Codex 数据目录</span></summary><div class="settings-fields"><label>电脑名称<input id="machine-name" type="text" placeholder="使用唯一的电脑名称"></label><label class="home-field">Codex 数据目录<input id="codex-home" type="text" placeholder="默认读取当前用户的 .codex 目录"></label><button id="apply-settings" class="button secondary">应用并读取</button></div></details>
+  </section>
+  <section class="section-block details-section"><div class="section-title"><div><h2>每日用量明细</h2><p id="table-description">可查看和导出每台电脑的每日用量。</p></div><button id="download-daily" class="text-button">↓ 下载明细</button></div><div class="table-scroll"><table><thead><tr><th>日期</th><th>电脑名称</th><th>输入 token</th><th>缓存输入</th><th>输出 token</th><th>总 token</th><th>当天占比</th></tr></thead><tbody id="daily-table"></tbody></table></div><div class="table-footer"><span id="table-count">0 条记录</span><button id="show-more" class="text-button" hidden>显示更多</button><span>缓存输入已包含在输入用量中</span></div></section>
+  <section class="notes section-block" id="notes-section"><div><h2>关于这些数字</h2><p>本地日志 token 用量不等于订阅额度或账单金额。缺失日志、云端执行和未导入设备不会自动补齐。</p><p>同一事件出现在多台电脑时只计一次，归入「设备归属不明」。数据仅保留在当前页面内，关闭或刷新页面后需重新导入。</p></div><details id="diagnostics"><summary>查看数据诊断 <span id="diagnostic-count">0</span></summary><div id="diagnostics-list"></div></details></section>
+  <footer><span>Codex 用量看板</span><span>北京时间 UTC+08:00 · <span id="updated-at">尚未读取</span></span></footer>
+</main><script src="/ui.js" defer></script>
+</body></html>
